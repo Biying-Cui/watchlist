@@ -4,18 +4,24 @@
 	<meta charset="utf-8">
 	<title>{{ name }}'s Watchlist</title>{#{{这里放变量}}#}
 	<link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
+	<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" type="text/css">
 </head>
 <body>
 	<h2>{{ name }}'s Watchlist</h2>
 	{# 使用 length 过滤器获取 movies 变量的长度 #}
 	<img src="{{ url_for('static', filename='little.jpg') }}">
-	<!-- <h2>
-		<img alt="Avatar" src="{{ url_for('static', filename='images/avatar.png') }}">
+	<h2>
+		<img alt="Avatar" src="{{ url_for('static', filename='images/little.jpg') }}">{{ name }}'s Watchlist
+	</h2>
+	
+	<h2>
+		<img alt="Avatar" class="avatar" src="{{ url_for('static', filename='images/avatar.png') }}">
 		{{ name }}'s Watchlist
-	</h2> -->
-	<!-- <img alt="Walking Totoro" src="{{ url_for('static', filename='images/totoro.gif') }}"> -->
+	</h2>
+
+	<img alt="Walking Totoro" src="{{ url_for('static', filename='images/little.jpg') }}">
 	<p>{{ movies|length }} Titles</p>  {#过滤器语法：{{变量|过滤器}}#}
-	<ul>
+	<ul class="movie-list">
 		{% for movie in movies %} {# 迭代 movies 变量 #}{#这里放注释#}
 		<li>{{ movie.title }} - {{ movie.year }}</li> {# 等同于movie['title'] #}
 		{% endfor %} {# 使用 endfor 标签结束 for 语句 #}{#{%这里标记语句，如for语句，if语句等%}#}
