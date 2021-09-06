@@ -6,6 +6,9 @@ import click
 from flask import Flask #从flask包导入Flask类
 from flask import url_for
 from flask import render_template
+from flask import request  #请求触发后把请求信息放到request对象里
+from flask import flash  #flash()函数用于在视图函数里向模板传递提示消息
+from flask import redirect
 
 from flask_sqlalchemy import SQLAlchemy # 导入扩展类
 
@@ -16,7 +19,7 @@ else: # 否则使用四个斜线
 	prefix = 'sqlite:////'
 
 app = Flask(__name__) #通过实例化这个类，创建一个程序对象app
-
+app.config['SECRET_KEY'] = 'dev'
 
 # @app.route('/') #注册处理函数（视图函数），使用app.route这个装饰器为函数绑定对应的URL：这里的/指根地址，完整URL是http://localhost:5000/
 # @app.route('/index')
@@ -52,8 +55,6 @@ def test_url_for():
 # 下面这个调用传入了多余的关键字参数，它们会被作为查询字符串附加到 URL后面。
 	print(url_for('test_url_for', num=2)) # 输出：/test?num=2
 	return 'Test page'
-
-
 
 # @app.route('/')
 # def index():
@@ -143,7 +144,55 @@ def inject_user(): # 函数名可以随意修改
 def page_not_found(e):
 	return render_template('404.html'), 404
 
-@app.route('/')
+@app.route('/', methods = ['GET', 'POST'])
 def index():
+	if request.method == 'POST':  #判断是否是POST请求
+		#获取表单数据
+		title = request.form.get('title')
+		year = request.form.get('year')
+
+		#输入数据为空或者长度不符合要求
+		if not title or not year or len(year)>4 or len(title)>60:
+			flash('Invalid input.') #显示错误提示
+			return redirect(url_for('index')) #重新定向回主页
+		#保存表单数据到数据库
+		movie = Movie(title=title, year=year)
+		db.session.add(movie) #添加到数据库会话
+		db.session.commit() #提交数据库会话
+		flash('Item created.')
+		return redirect(url_for('index'))
+
+	user = User.query.first()
 	movies = Movie.query.all()
-	return render_template('index.html', movies=movies)
+	return render_template('index.html', user = user, movies = movies)
+
+@app.route('/movie/edit/<int:movie_id>', methods=['GET','POST'])
+
+def edit(movie_id): #编辑条目
+	movie = Movie.query.get_or_404(movie_id) #get_or_404()方法：返回对应主键的记录，没找到则返回404错误相应
+
+	if request.method == 'POST':
+		title = request.form['title']
+		year = request.form['year']
+
+		if not title or not year or len(year)>4 or len(title)>60:
+			flash('Invalid input.') #显示错误提示
+			return redirect(url_for('edit', movie_id=movie_id)) #重新定向回对应的编辑页面
+		#保存表单数据到数据库
+		movie.title = title #更新标题
+		movie.year = year  #更新年份
+		
+		db.session.commit() #提交数据库会话
+		flash('Item updated.')
+		return redirect(url_for('index'))
+
+	return render_template('edit.html', movie = movie) 
+
+
+@app.route('/movie/delete/<int:movie_id>', methods=['POST']) #限定只接受 POST 请求
+def delete(movie_id):
+	movie = Movie.query.get_or_404(movie_id) # 获取电影记录
+	db.session.delete(movie) # 删除对应的记录
+	db.session.commit() # 提交数据库会话
+	flash('Item deleted.')
+	return redirect(url_for('index')) # 重定向回主页

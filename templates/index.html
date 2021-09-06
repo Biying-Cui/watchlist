@@ -43,6 +43,13 @@
 	<li>{{ movie.title }} - {{ movie.year }}
 		<span class="float-right">
 			<a class="豆瓣" href="https://movie.douban.com/subject_search?search_text={{ movie.title }}" target="_blank" title="Find this movie on IMDb">豆瓣</a>
+			
+			<form class="inline-form" method="post" action="{{ url_for('delete', movie_id=movie.id) }}">
+				<input class="btn" type="submit" name="delete" value="Delete" onclick="return confirm('Are you sure?')">
+			</form>
+
+			<a class="btn" href="{{ url_for('edit', movie_id=movie.id) }}">Edit</a>
+			
 		</span>
 		<span class="float-center">
 			<a class="哔哩哔哩" href="https://space.bilibili.com/151089620" target="_blank" title="Find this movie on bilibili">bilibili</a>
@@ -50,8 +57,18 @@
 	</li>
 	{% endfor %}
 </ul>
+
+<p>{{ movies|length }} Titles</p>
+<form method="post">
+	Name <input type="text" name="title" autocomplete="off" required>
+	Year <input type="text" name="year" autocomplete="off" required>
+	<input class="btn" type="submit" name="submit" value="Add">
+</form>
+
 <img alt="Walking Totoro" class="totoro" src="{{ url_for('static', filename='images/totoro.gif') }}" title="to~to~ro~">
 
 
 {% endblock %}
+
+
 
